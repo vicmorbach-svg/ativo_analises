@@ -1,0 +1,7 @@
+streamlit
+pandas
+import matplotlib.pyplot
+import seaborn as sns
+import pyarrow.parquet as pq
+import numpy as np
+from io import BytesIO
