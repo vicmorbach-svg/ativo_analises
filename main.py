@@ -60,7 +60,7 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             df_contatos = pd.read_excel(arquivo_excel)
 
             # Validação da coluna 'matricula'
-            nome_coluna_matricula = 'matricula' 
+            nome_coluna_matricula = 'Código Imóvel' 
             if nome_coluna_matricula not in df_contatos.columns:
                 st.error(f"🚨 Erro: A coluna '{nome_coluna_matricula}' não foi encontrada no arquivo Excel de Contatos.")
                 st.warning(f"As colunas que o App encontrou no seu arquivo foram: {', '.join(df_contatos.columns)}")
