@@ -11,12 +11,35 @@ from io import BytesIO
 # =====================================================================
 st.set_page_config(page_title="Dashboard de Cobrança", layout="wide")
 
+# =====================================================================
+# BARRA LATERAL: PARÂMETROS DA ANÁLISE
+# =====================================================================
+st.sidebar.header("⚙️ Parâmetros da Análise")
+st.sidebar.write("Ajuste as regras de negócio antes de processar os dados.")
+
+limite_dias_pagamento = st.sidebar.number_input(
+    "Janela de Pagamento (dias)", 
+    min_value=0, 
+    value=10, 
+    step=1,
+    help="Considerar apenas pagamentos realizados até X dias após a data do contato."
+)
+
+limite_tempo_duracao = st.sidebar.number_input(
+    "Duração Mínima da Ligação (segundos)", 
+    min_value=0, 
+    value=60, 
+    step=1,
+    help="Tempo mínimo para que tabulações de exceção (ex: Ligação Caiu) sejam consideradas Positivas."
+)
+
+# =====================================================================
+# INTERFACE PRINCIPAL
+# =====================================================================
 st.title("📊 Painel de Resultados de Cobrança")
 st.write("Faça o upload das bases de dados abaixo para gerar a análise de desempenho e o relatório consolidado.")
 
-# =====================================================================
-# 1. UPLOAD DE ARQUIVOS (INTERFACE)
-# =====================================================================
+# 1. UPLOAD DE ARQUIVOS
 col1, col2 = st.columns(2)
 with col1:
     arquivo_parquet = st.file_uploader("1. Base de Pagamentos (.parquet)", type=['parquet'])
@@ -27,22 +50,22 @@ with col2:
 if arquivo_parquet is not None and arquivo_excel is not None:
     if st.button("🚀 Processar Dados e Gerar Relatórios", type="primary"):
 
-        # Barra de carregamento visual
         with st.spinner('Lendo arquivos e processando regras de negócio...'):
 
             # Lendo os arquivos carregados pelo usuário
             df_pagamentos = pq.read_table(arquivo_parquet).to_pandas()
-            df_contatos = pd.read_excel(arquivo_excel)   
 
-            # Verifica se a coluna existe exatamente com esse nome
-            nome_coluna_matricula = 'matricula' # Mude aqui se no seu Excel for MATRICULA
+            # Trava de segurança para a aba correta e pulando linhas se necessário
+            # (Ajuste o skiprows se o seu cabeçalho não estiver na linha 1)
+            df_contatos = pd.read_excel(arquivo_excel)
 
+            # Validação da coluna 'matricula'
+            nome_coluna_matricula = 'matricula' 
             if nome_coluna_matricula not in df_contatos.columns:
                 st.error(f"🚨 Erro: A coluna '{nome_coluna_matricula}' não foi encontrada no arquivo Excel de Contatos.")
                 st.warning(f"As colunas que o App encontrou no seu arquivo foram: {', '.join(df_contatos.columns)}")
                 st.info("Por favor, corrija o cabeçalho no arquivo Excel e faça o upload novamente.")
-                st.stop() # Para a execução do aplicativo aqui, evitando a tela de erro vermelha do Python
-            # =====================================================================
+                st.stop()
 
             # Converter colunas de chave para string
             df_pagamentos['MATRICULA_PAGAMENTO'] = df_pagamentos['MATRICULA_PAGAMENTO'].astype(str)
@@ -72,15 +95,13 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             )
 
             # =====================================================================
-            # REGRAS DE NEGÓCIO
+            # REGRAS DE NEGÓCIO (Usando os parâmetros da barra lateral)
             # =====================================================================
-            limite_dias_pagamento = 10
             df_cruzado['DATA_PAGAMENTO'] = pd.to_datetime(df_cruzado['DATA_PAGAMENTO'], dayfirst=True)
             df_cruzado['Dias_Ate_Pagamento'] = (df_cruzado['DATA_PAGAMENTO'] - df_cruzado['Data']).dt.days
             df_cruzado = df_cruzado[(df_cruzado['Dias_Ate_Pagamento'] >= 0) & (df_cruzado['Dias_Ate_Pagamento'] <= limite_dias_pagamento)]
 
             coluna_duracao = 'Duração'
-            limite_tempo_duracao = 60
             df_cruzado['Duracao_Segundos'] = pd.to_timedelta(df_cruzado[coluna_duracao].astype(str)).dt.total_seconds()
 
             df_cruzado['Conta_Volume'] = np.where(df_cruzado['TIPO_FATURA'] == '1-NOTA FISCAL MENSAL', 1, 0)
@@ -110,7 +131,7 @@ if arquivo_parquet is not None and arquivo_excel is not None:
         st.success("✅ Dados processados com sucesso! Gerando visualizações...")
 
         # =====================================================================
-        # FUNÇÃO DE ANÁLISE E GRÁFICOS (ADAPTADA PARA STREAMLIT)
+        # FUNÇÃO DE ANÁLISE E GRÁFICOS
         # =====================================================================
         def analisar_bloco(df_bloco, nome_bloco, paleta_cores):
             if df_bloco.empty:
@@ -194,10 +215,8 @@ if arquivo_parquet is not None and arquivo_excel is not None:
                     cell.set_facecolor('#e6e6e6')
 
             plt.tight_layout()
-
-            # Exibe o gráfico no Streamlit
             st.pyplot(fig)
-            plt.close(fig) # Limpa a memória
+            plt.close(fig) 
 
         # Renderizando os blocos na tela
         st.header("📈 Análise por Conjuntos")
@@ -295,18 +314,16 @@ if arquivo_parquet is not None and arquivo_excel is not None:
         table.auto_set_column_width(col=[0, 1, 2, 3, 4])
         plt.tight_layout()
 
-        # Exibe a tabela consolidada no Streamlit
         st.pyplot(fig_resumo)
         plt.close(fig_resumo)
 
         # =====================================================================
-        # EXPORTAÇÃO PARA EXCEL (DOWNLOAD BUTTON)
+        # EXPORTAÇÃO PARA EXCEL
         # =====================================================================
         st.header("📥 Exportar Dados")
 
         df_consolidado_excel = df_cruzado.groupby(['Categoria', 'Tab']).agg(Volume_Notas_Mensais=('Conta_Volume', 'sum'), Valor_Total=('VALOR_PAGO', 'sum')).reset_index()
 
-        # Cria um arquivo Excel na memória (BytesIO) em vez de salvar no disco
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df_consolidado_excel.to_excel(writer, sheet_name='Resumo_Consolidado', index=False)
@@ -315,7 +332,6 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             df_negativas.to_excel(writer, sheet_name='Base_Negativas', index=False)
             df_outras.to_excel(writer, sheet_name='Base_Outras', index=False)
 
-        # Botão nativo do Streamlit para download
         st.download_button(
             label="Baixar Relatório Excel Completo",
             data=output.getvalue(),
