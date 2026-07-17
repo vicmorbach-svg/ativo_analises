@@ -32,7 +32,17 @@ if arquivo_parquet is not None and arquivo_excel is not None:
 
             # Lendo os arquivos carregados pelo usuário
             df_pagamentos = pq.read_table(arquivo_parquet).to_pandas()
-            df_contatos = pd.read_excel(arquivo_excel)
+            df_contatos = pd.read_excel(arquivo_excel)   
+
+            # Verifica se a coluna existe exatamente com esse nome
+            nome_coluna_matricula = 'matricula' # Mude aqui se no seu Excel for MATRICULA
+
+            if nome_coluna_matricula not in df_contatos.columns:
+                st.error(f"🚨 Erro: A coluna '{nome_coluna_matricula}' não foi encontrada no arquivo Excel de Contatos.")
+                st.warning(f"As colunas que o App encontrou no seu arquivo foram: {', '.join(df_contatos.columns)}")
+                st.info("Por favor, corrija o cabeçalho no arquivo Excel e faça o upload novamente.")
+                st.stop() # Para a execução do aplicativo aqui, evitando a tela de erro vermelha do Python
+            # =====================================================================
 
             # Converter colunas de chave para string
             df_pagamentos['MATRICULA_PAGAMENTO'] = df_pagamentos['MATRICULA_PAGAMENTO'].astype(str)
