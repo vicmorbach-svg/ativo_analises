@@ -55,8 +55,15 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             # Lendo os arquivos carregados pelo usuário
             df_pagamentos = pq.read_table(arquivo_parquet).to_pandas()
 
+            # =====================================================================
+            # NOVO: TRAVA CONTRA DUPLICAÇÃO DE PAGAMENTOS
+            # =====================================================================
+            # 1. Remove duplicatas exatas que já possam vir no arquivo original
+            df_pagamentos = df_pagamentos.drop_duplicates() 
+            # 2. Cria um ID único temporário para cada linha de pagamento
+            df_pagamentos['ID_PAGAMENTO_TEMP'] = range(len(df_pagamentos))
+
             # Trava de segurança para a aba correta e pulando linhas se necessário
-            # (Ajuste o skiprows se o seu cabeçalho não estiver na linha 1)
             df_contatos = pd.read_excel(arquivo_excel)
 
             # Validação da coluna 'matricula'
@@ -69,7 +76,7 @@ if arquivo_parquet is not None and arquivo_excel is not None:
 
             # Converter colunas de chave para string
             df_pagamentos['MATRICULA_PAGAMENTO'] = df_pagamentos['MATRICULA_PAGAMENTO'].astype(str)
-            df_contatos['matricula'] = df_contatos['matricula'].astype(str)
+            df_contatos['matricula'] = df_contatos[nome_coluna_matricula].astype(str) # Ajustado para usar a variável correta
             df_contatos['Contrato'] = df_contatos['Contrato'].astype(str)
 
             # =====================================================================
@@ -93,6 +100,14 @@ if arquivo_parquet is not None and arquivo_excel is not None:
                 right_on='MATRICULA_PAGAMENTO',
                 how='inner'
             )
+
+            # =====================================================================
+            # NOVO: LIMPANDO OS PAGAMENTOS MULTIPLICADOS PELO MERGE
+            # =====================================================================
+            # Ordena pela data do contato (para dar o crédito à primeira ligação)
+            df_cruzado = df_cruzado.sort_values('Data')
+            # Remove qualquer pagamento que tenha sido duplicado por causa de múltiplos contratos
+            df_cruzado = df_cruzado.drop_duplicates(subset='ID_PAGAMENTO_TEMP', keep='first')
 
             # =====================================================================
             # REGRAS DE NEGÓCIO (Usando os parâmetros da barra lateral)
