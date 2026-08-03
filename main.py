@@ -125,8 +125,8 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             # CATEGORIZAÇÃO DAS TABULAÇÕES
             # =====================================================================
             tab_positivas = ['2a Via de fatura', 'Contato Realizado Com Promessa De Pagamento', 'Negociado Parcelado', 'Telefone Não Pertence Ao Contato', 'Caixa postal', 'Cliente Informa Que Ja Pagou', 
-                             'Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente', 'SSP - Inquilino', 'ININ-WRAP-UP-TIMEOUT', 'Ligacao Atendida por Terceiro', 'S/negociacao - Contato Posterior', 'ININ-OUTBOUND-CONTACT-ATTEMPT-LIMIT-SKIPPED', 
-                             'SPP- Sem Dinheiro', 'SPP - Não Consegue Pagar A Vista', 'Usuário Cadastro Falecido']
+                             'Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente', 'SPP - Inquilino', 'ININ-WRAP-UP-TIMEOUT', 'Ligacao Atendida Por Terceiro', 'S/negociacao - Contato Posterior', 'ININ-OUTBOUND-CONTACT-ATTEMPT-LIMIT-SKIPPED', 
+                             'SPP - Sem Dinheiro', 'SPP - Não Consegue Pagar A Vista', 'Usuário Cadastrado Falecido']
             tab_negativas = [   'Ligacao Muda', 'OUT_PosVoice', 'ININ-OUTBOUND-PREVIEW-SKIPPED', 'S/negociação - Fatura Bloqueada', 'S/negociação - Retificação de Fatura', 'Ocupado']
             tabs_excecao_tempo = ['Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente']
 
