@@ -124,8 +124,8 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             # =====================================================================
             # CATEGORIZAÇÃO DAS TABULAÇÕES
             # =====================================================================
-            tab_positivas = ['2a Via de fatura', 'Contato Realizado Com Promessa De Pagamento', 'Negociado Parcelado']
-            tab_negativas = ['Caixa postal', 'Cliente Informa Que Ja Pagou', 'Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente', 'Ligacao Muda', 'Ocupado', 'Telefone Não Pertence Ao Contato']
+            tab_positivas = ['2a Via de fatura', 'Contato Realizado Com Promessa De Pagamento', 'Negociado Parcelado', 'Telefone Não Pertence Ao Contato', 'Caixa postal', 'Cliente Informa Que Ja Pagou', 'Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente', 'SSP - Inquilino', 'ININ-WRAP-UP-TIMEOUT', 'Ligacao atendida por terceiro', 'S/negociacao - Contato posterior', 'ININ-OUTBOUND-CONTACT-ATTEMPT-LIMIT-SKIPPED', 'SPP- Sem dinheiro', 'SPP - não consegue pagar a vista', 'Usuário cadastro falecido']
+            tab_negativas = [   'Ligacao Muda', 'OUT_Posvoice', 'ININ-OUTBOUND-PREVIEW-SKIPPED', 'S/negociação - Fatura Bloqueada', 'S/negociação - Retificação de Fatura', 'Ocupado']
             tabs_excecao_tempo = ['Ligacao Caiu', 'Ligacao Encerrada Pelo Cliente']
 
             condicao_positiva = (df_cruzado['Tab'].isin(tab_positivas) | (df_cruzado['Tab'].isin(tabs_excecao_tempo) & (df_cruzado['Duracao_Segundos'] >= limite_tempo_duracao)))
