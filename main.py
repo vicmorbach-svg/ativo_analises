@@ -116,7 +116,7 @@ if arquivo_parquet is not None and arquivo_excel is not None:
             df_cruzado['Dias_Ate_Pagamento'] = (df_cruzado['DATA_PAGAMENTO'] - df_cruzado['Data']).dt.days
             df_cruzado = df_cruzado[(df_cruzado['Dias_Ate_Pagamento'] >= 0) & (df_cruzado['Dias_Ate_Pagamento'] <= limite_dias_pagamento)]
 
-            coluna_duracao = 'Duração'
+            coluna_duracao = 'Tempo Em Conversa'
             df_cruzado['Duracao_Segundos'] = pd.to_timedelta(df_cruzado[coluna_duracao].astype(str)).dt.total_seconds()
 
             df_cruzado['Conta_Volume'] = np.where(df_cruzado['TIPO_FATURA'] == '1-NOTA FISCAL MENSAL', 1, 0)
